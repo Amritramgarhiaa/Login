@@ -1,44 +1,47 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Login</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.11/firebase-auth-compat.js"></script>
 
-  <!-- FirebaseUI -->
-  <link type="text/css" rel="stylesheet" href="https://cdn.firebase.com/libs/firebaseui/4.8.0/firebaseui.css" />
-  <script src="https://cdn.firebase.com/libs/firebaseui/4.8.0/firebaseui.js"></script>
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+
+  <!-- FirebaseUI CSS & JS -->
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css" />
+  <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
 
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Segoe UI', sans-serif;
       text-align: center;
-      background: #f8f8f8;
+      background: linear-gradient(to right, #74ebd5, #acb6e5);
       margin: 0;
       padding: 0;
     }
     h2 {
-      margin-top: 40px;
+      padding-top: 40px;
+      font-size: 28px;
       color: #333;
     }
     #firebaseui-auth-container {
-      margin-top: 30px;
-      display: flex;
-      justify-content: center;
+      margin: 40px auto;
+      width: 300px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
     }
   </style>
 </head>
 <body>
-
   <h2>Welcome! Please Sign In</h2>
   <div id="firebaseui-auth-container"></div>
 
   <script>
-    // Firebase config
+    // ✅ Firebase Configuration
     const firebaseConfig = {
       apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
       authDomain: "airaview.firebaseapp.com",
@@ -49,11 +52,12 @@
       appId: "1:547164172741:web:9ffc76f0522610d91b9bac"
     };
 
-    // Initialize Firebase
+    // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // FirebaseUI config
+    // ✅ FirebaseUI config
     const uiConfig = {
+      signInSuccessUrl: '#',
       signInOptions: [
         firebase.auth.GoogleAuthProvider.PROVIDER_ID,
         firebase.auth.FacebookAuthProvider.PROVIDER_ID
@@ -61,22 +65,24 @@
       callbacks: {
         signInSuccessWithAuthResult: function(authResult, redirectUrl) {
           const user = authResult.user;
-          const userInfo = {
+          const userData = {
             email: user.email,
-            displayName: user.displayName,
-            photoURL: user.photoURL,
-            uid: user.uid
+            uid: user.uid,
+            name: user.displayName,
+            photo: user.photoURL
           };
-          // Send info to MIT App Inventor
+
+          // Send to MIT App Inventor
           if (window.AppInventor) {
-            window.AppInventor.setWebViewString(JSON.stringify(userInfo));
+            window.AppInventor.setWebViewString(JSON.stringify(userData));
           }
-          return false; // Prevent redirect
+
+          return false; // stay on this page
         }
       }
     };
 
-    // Initialize the FirebaseUI Widget
+    // ✅ Launch FirebaseUI
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
     ui.start('#firebaseui-auth-container', uiConfig);
   </script>
