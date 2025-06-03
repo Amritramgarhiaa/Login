@@ -1,13 +1,19 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="google-signin-client_id" content="274899310104-lvm7m5is13bihr8qfcaldlaphm01fiuc.apps.googleusercontent.com">
-    <script src="https://apis.google.com/js/platform.js" async defer></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+    <title>Google Sign-In</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
+    <!-- Google Sign-in -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    
     <script>
+      // Firebase config
       const firebaseConfig = {
         apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
         authDomain: "airaview.firebaseapp.com",
@@ -19,26 +25,43 @@
       };
       firebase.initializeApp(firebaseConfig);
 
-      function onSignIn(googleUser) {
-        var profile = googleUser.getBasicProfile();
-        var id_token = googleUser.getAuthResponse().id_token;
-        var email = profile.getEmail();
-        var name = profile.getName();
-        var uid = email.replace(/[.@]/g, "_"); // unique id
+      // Sign-In
+      function handleCredentialResponse(response) {
+        firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(response.credential))
+        .then((result) => {
+          const user = result.user;
+          const uid = user.uid;
+          const email = user.email;
 
-        // Store in Firebase Realtime Database
-        firebase.database().ref("Users/" + uid).set({
-          name: name,
-          email: email,
-          uid: uid
+          // Save to Firebase Database
+          firebase.database().ref("users/" + uid).set({
+            email: email,
+            uid: uid
+          });
+
+          // Send back to MIT App Inventor using WebViewer.WebViewString
+          window.location.href = "mitappinventor://login-success?email=" + encodeURIComponent(email) + "&uid=" + uid;
+        })
+        .catch((error) => {
+          alert("Login Error: " + error.message);
         });
-
-        // Send UID to MIT App Inventor
-        window.AppInventor.setWebViewString(uid);
       }
+
+      window.onload = function () {
+        google.accounts.id.initialize({
+          client_id: "274899310104-lvm7m5is13bihr8qfcaldlaphm01fiuc.apps.googleusercontent.com",
+          callback: handleCredentialResponse
+        });
+        google.accounts.id.renderButton(
+          document.getElementById("signinDiv"),
+          { theme: "outline", size: "large" }
+        );
+        google.accounts.id.prompt();
+      };
     </script>
   </head>
   <body>
-    <div class="g-signin2" data-onsuccess="onSignIn"></div>
+    <h3 style="text-align:center;">Sign in with Google</h3>
+    <div id="signinDiv" style="text-align:center;"></div>
   </body>
 </html>
