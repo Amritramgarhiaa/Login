@@ -1,0 +1,43 @@
+<!DOCTYPE html><html>
+<head>
+  <title>Login | Aura_View</title>
+  <script type="module">
+    // Import Firebase
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";// Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
+  authDomain: "airaview.firebaseapp.com",
+  databaseURL: "https://airaview-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "airaview",
+  storageBucket: "airaview.firebasestorage.app",
+  messagingSenderId: "547164172741",
+  appId: "1:547164172741:web:9ffc76f0522610d91b9bac"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+window.loginUser = function(event) {
+  event.preventDefault();
+  const email = document.getElementById("email").value;
+  const password = document.getElementById("password").value;
+
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      const user = userCredential.user;
+      // Store token/email in localStorage
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userEmail", user.email);
+
+      // Redirect to Screen2
+      window.location.href = "success.html"; // This can be a dummy page loaded in WebViewer
+    })
+    .catch((error) => {
+      alert("Login Failed: " + error.message);
+    });
+}
+
+  </script>
+</
