@@ -1,67 +1,120 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Google Sign-In</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!DOCTYPE html><html>
+<head>
+  <title>Airaview Auth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #4facfe, #00f2fe);
+      color: #fff;
+      text-align: center;
+      padding: 30px;
+    }
+    .container {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 400px;
+      margin: auto;
+    }
+    input, button {
+      width: 90%;
+      padding: 12px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+    button {
+      background-color: #00c6ff;
+      color: #fff;
+      font-weight: bold;
+    }
+    .link {
+      color: #ffe;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  </style>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js"></script>
+</head>
+<body>
+<div class="container">
+  <h2>Welcome to Airaview</h2>
+  <div id="register">
+    <h3>Register</h3>
+    <input type="email" id="regEmail" placeholder="Email" required>
+    <input type="password" id="regPassword" placeholder="Password" required>
+    <button onclick="register()">Register</button>
+  </div>  <div id="login">
+    <h3>Login</h3>
+    <input type="email" id="loginEmail" placeholder="Email" required>
+    <input type="password" id="loginPassword" placeholder="Password" required>
+    <button onclick="login()">Login</button>
+    <div class="link" onclick="showForgot()">Forgot Password?</div>
+  </div>  <div id="forgot" style="display:none;">
+    <h3>Reset Password</h3>
+    <input type="email" id="forgotEmail" placeholder="Your Email" required>
+    <button onclick="resetPassword()">Send Reset Link</button>
+    <div class="link" onclick="hideForgot()">Back to Login</div>
+  </div>
+</div><script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
+    authDomain: "airaview.firebaseapp.com",
+    databaseURL: "https://airaview-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "airaview",
+    storageBucket: "airaview.firebasestorage.app",
+    messagingSenderId: "547164172741",
+    appId: "1:547164172741:web:9ffc76f0522610d91b9bac"
+  };
 
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
 
-    <!-- Google Sign-in -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    
-    <script>
-      // Firebase config
-      const firebaseConfig = {
-        apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
-        authDomain: "airaview.firebaseapp.com",
-        databaseURL: "https://airaview-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "airaview",
-        storageBucket: "airaview.firebasestorage.app",
-        messagingSenderId: "547164172741",
-        appId: "1:547164172741:web:9ffc76f0522610d91b9bac"
-      };
-      firebase.initializeApp(firebaseConfig);
+  function register() {
+    const email = document.getElementById("regEmail").value;
+    const password = document.getElementById("regPassword").value;
 
-      // Sign-In
-      function handleCredentialResponse(response) {
-        firebase.auth().signInWithCredential(firebase.auth.GoogleAuthProvider.credential(response.credential))
-        .then((result) => {
-          const user = result.user;
-          const uid = user.uid;
-          const email = user.email;
+    auth.createUserWithEmailAndPassword(email, password)
+      .then((userCred) => {
+        userCred.user.sendEmailVerification();
+        alert("Registered. Please verify your email.");
+      })
+      .catch(error => alert(error.message));
+  }
 
-          // Save to Firebase Database
-          firebase.database().ref("users/" + uid).set({
-            email: email,
-            uid: uid
-          });
+  function login() {
+    const email = document.getElementById("loginEmail").value;
+    const password = document.getElementById("loginPassword").value;
 
-          // Send back to MIT App Inventor using WebViewer.WebViewString
-          window.location.href = "mitappinventor://login-success?email=" + encodeURIComponent(email) + "&uid=" + uid;
-        })
-        .catch((error) => {
-          alert("Login Error: " + error.message);
-        });
-      }
+    auth.signInWithEmailAndPassword(email, password)
+      .then((userCred) => {
+        if (userCred.user.emailVerified) {
+          alert("Login Successful");
+          window.location.href = "screen2.html"; // Change this to your actual screen2
+        } else {
+          alert("Please verify your email first.");
+        }
+      })
+      .catch(error => alert(error.message));
+  }
 
-      window.onload = function () {
-        google.accounts.id.initialize({
-          client_id: "274899310104-lvm7m5is13bihr8qfcaldlaphm01fiuc.apps.googleusercontent.com",
-          callback: handleCredentialResponse
-        });
-        google.accounts.id.renderButton(
-          document.getElementById("signinDiv"),
-          { theme: "outline", size: "large" }
-        );
-        google.accounts.id.prompt();
-      };
-    </script>
-  </head>
-  <body>
-    <h3 style="text-align:center;">Sign in with Google</h3>
-    <div id="signinDiv" style="text-align:center;"></div>
-  </body>
+  function resetPassword() {
+    const email = document.getElementById("forgotEmail").value;
+    auth.sendPasswordResetEmail(email)
+      .then(() => alert("Reset email sent!"))
+      .catch(error => alert(error.message));
+  }
+
+  function showForgot() {
+    document.getElementById("forgot").style.display = 'block';
+    document.getElementById("login").style.display = 'none';
+  }
+
+  function hideForgot() {
+    document.getElementById("forgot").style.display = 'none';
+    document.getElementById("login").style.display = 'block';
+  }
+</script></body>
 </html>
