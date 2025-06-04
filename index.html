@@ -1,90 +1,113 @@
-<!DOCTYPE html>
-<html lang="en">
+<!DOCTYPE html><html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Login</title>
-
-  <!-- Firebase SDKs -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-
-  <!-- FirebaseUI CSS & JS -->
-  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css" />
-  <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
-
+  <meta charset="UTF-8">
+  <title>Login | Airaview</title>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
   <style>
     body {
+      background: #f5f7fa;
       font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-      background: linear-gradient(to right, #74ebd5, #acb6e5);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
       margin: 0;
-      padding: 0;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      text-align: center;
+      width: 90%;
+      max-width: 400px;
     }
     h2 {
-      padding-top: 40px;
-      font-size: 28px;
+      margin-bottom: 20px;
       color: #333;
     }
-    #firebaseui-auth-container {
-      margin: 40px auto;
-      width: 300px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 15px;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .google {
+      background-color: #db4437;
+      color: white;
+    }
+    .facebook {
+      background-color: #4267B2;
+      color: white;
+    }
+    .google:hover, .facebook:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 <body>
-  <h2>Welcome! Please Sign In</h2>
-  <div id="firebaseui-auth-container"></div>
-
-  <script>
-    // ✅ Firebase Configuration
+  <div class="card">
+    <h2>Welcome! Please Sign In</h2>
+    <button class="google" onclick="googleLogin()">Sign in with Google</button>
+    <button class="facebook" onclick="facebookLogin()">Sign in with Facebook</button>
+  </div>  <script>
     const firebaseConfig = {
       apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
       authDomain: "airaview.firebaseapp.com",
-      databaseURL: "https://airaview-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "airaview",
       storageBucket: "airaview.appspot.com",
       messagingSenderId: "547164172741",
       appId: "1:547164172741:web:9ffc76f0522610d91b9bac"
     };
 
-    // ✅ Initialize Firebase
     firebase.initializeApp(firebaseConfig);
 
-    // ✅ FirebaseUI config
-    const uiConfig = {
-      signInSuccessUrl: '#',
-      signInOptions: [
-        firebase.auth.GoogleAuthProvider.PROVIDER_ID,
-        firebase.auth.FacebookAuthProvider.PROVIDER_ID
-      ],
-      callbacks: {
-        signInSuccessWithAuthResult: function(authResult, redirectUrl) {
-          const user = authResult.user;
-          const userData = {
+    function googleLogin() {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          const userInfo = {
             email: user.email,
-            uid: user.uid,
             name: user.displayName,
-            photo: user.photoURL
+            uid: user.uid,
+            photo: user.photoURL,
+            provider: 'google'
           };
-
-          // Send to MIT App Inventor
           if (window.AppInventor) {
-            window.AppInventor.setWebViewString(JSON.stringify(userData));
+            window.AppInventor.setWebViewString(JSON.stringify(userInfo));
           }
+        })
+        .catch((error) => {
+          alert("Google Login Failed: " + error.message);
+        });
+    }
 
-          return false; // stay on this page
-        }
-      }
-    };
-
-    // ✅ Launch FirebaseUI
-    const ui = new firebaseui.auth.AuthUI(firebase.auth());
-    ui.start('#firebaseui-auth-container', uiConfig);
-  </script>
-</body>
+    function facebookLogin() {
+      const provider = new firebase.auth.FacebookAuthProvider();
+      firebase.auth().signInWithPopup(provider)
+        .then((result) => {
+          const user = result.user;
+          const userInfo = {
+            email: user.email,
+            name: user.displayName,
+            uid: user.uid,
+            photo: user.photoURL,
+            provider: 'facebook'
+          };
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString(JSON.stringify(userInfo));
+          }
+        })
+        .catch((error) => {
+          alert("Facebook Login Failed: " + error.message);
+        });
+    }
+  </script></body>
 </html>
