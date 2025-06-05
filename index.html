@@ -42,16 +42,16 @@
   <button class="btn fb" onclick="facebookLogin()">Sign in with Facebook</button>
 
   <script type="module">
-    // Firebase SDKs
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import {
       getAuth,
       GoogleAuthProvider,
       FacebookAuthProvider,
-      signInWithPopup
+      signInWithRedirect,
+      getRedirectResult
     } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
-    // Firebase Config
+    // Your Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyBnbLZ6GQgRDMurhcGAJ5KseTrFPNq3-js",
       authDomain: "airaview.firebaseapp.com",
@@ -64,53 +64,39 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
-    // Google Login
-    window.googleLogin = async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
+    // Check redirect result
+    getRedirectResult(auth)
+      .then((result) => {
+        if (result && result.user) {
+          const user = result.user;
+          const userData = {
+            uid: user.uid,
+            email: user.email,
+            name: user.displayName,
+            provider: user.providerData[0]?.providerId || "unknown"
+          };
 
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          name: user.displayName,
-          provider: "google"
-        };
-
-        // Send to MIT App Inventor
-        if (window.AppInventor) {
-          window.AppInventor.setWebViewString(JSON.stringify(userData));
-        } else {
-          alert("Logged in: " + JSON.stringify(userData));
+          if (window.AppInventor) {
+            window.AppInventor.setWebViewString(JSON.stringify(userData));
+          } else {
+            alert("Logged in: " + JSON.stringify(userData));
+          }
         }
-      } catch (error) {
-        alert("Google Login Failed: " + error.message);
-      }
+      })
+      .catch((error) => {
+        console.error("Redirect sign-in error:", error);
+      });
+
+    // Google Login
+    window.googleLogin = () => {
+      const provider = new GoogleAuthProvider();
+      signInWithRedirect(auth, provider);
     };
 
     // Facebook Login
-    window.facebookLogin = async () => {
-      try {
-        const provider = new FacebookAuthProvider();
-        const result = await signInWithPopup(auth, provider);
-        const user = result.user;
-
-        const userData = {
-          uid: user.uid,
-          email: user.email,
-          name: user.displayName,
-          provider: "facebook"
-        };
-
-        if (window.AppInventor) {
-          window.AppInventor.setWebViewString(JSON.stringify(userData));
-        } else {
-          alert("Logged in: " + JSON.stringify(userData));
-        }
-      } catch (error) {
-        alert("Facebook Login Failed: " + error.message);
-      }
+    window.facebookLogin = () => {
+      const provider = new FacebookAuthProvider();
+      signInWithRedirect(auth, provider);
     };
   </script>
 </body>
